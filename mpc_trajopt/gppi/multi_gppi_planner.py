@@ -23,6 +23,7 @@ class MultiGPPI:
             opt_iters,
             dt=None,
             n_dof=None,
+            num_goals=None,
             step_size=1.,
             temp=1.,
             sigma_start=None,
@@ -49,7 +50,7 @@ class MultiGPPI:
         self.dt = dt
 
         self.traj_len = traj_len
-        self.num_goals = multi_goal_states.shape[0]
+        self.num_goals = num_goals
         self.num_particles_per_goal = num_particles_per_goal
         self.num_particles = num_particles_per_goal * self.num_goals
         self.num_samples = num_samples
