@@ -1,1 +1,1 @@
-# PyTorch TrajOpt Library 
+# Torch TrajOpt
