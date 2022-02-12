@@ -1,1 +1,1 @@
-# Torch TrajOpt
+# Torch MPC-TrajOpt
