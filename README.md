@@ -1,1 +1,1 @@
-# parallel_planning_lib
+# PyTorch TrajOpt Library 
