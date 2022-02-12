@@ -1,3 +1,7 @@
+__author__ = "Alexander Lambert"
+__license__ = "MIT"
+
+
 import numpy as np
 import torch
 from .point_particle import PointParticle

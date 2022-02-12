@@ -24,8 +24,6 @@ class MultiGPPI:
             n_dof=None,
             step_size=1.,
             temp=1.,
-            start_state=None,
-            multi_goal_states=None,
             sigma_start=None,
             sigma_start_init=None,
             sigma_start_sample=None,
@@ -67,19 +65,14 @@ class MultiGPPI:
         self.sigma_gp_init = sigma_gp_init
         self.sigma_gp_sample = sigma_gp_sample
         self.w_obst = w_obst
-        self.start_states = start_state # position + velocity
-
-        assert multi_goal_states.dim() == 2
-        assert multi_goal_states.shape[0] == self.num_goals
-        self.multi_goal_states = multi_goal_states # position + velocity
-        # self.goal_state = goal_states[0]
+        self.start_state = None # position + velocity
+        self.multi_goal_states = None # position + velocity
 
         self._mean = None
         self._weights = None
         self._sample_dist = None
 
-        self.set_prior_factors()
-        self.reset(start_state, multi_goal_states)
+        # self.reset(start_state, multi_goal_states)
 
     def set_prior_factors(self):
 
@@ -87,7 +80,7 @@ class MultiGPPI:
         self.start_prior = UnaryFactor(
             self.d_state_opt,
             self.sigma_start,
-            self.start_states,
+            self.start_state,
             self.tensor_args,
         )
 
@@ -114,7 +107,7 @@ class MultiGPPI:
         self.start_prior_init = UnaryFactor(
             self.d_state_opt,
             self.sigma_start_init,
-            self.start_states,
+            self.start_state,
             self.tensor_args,
         )
 
@@ -141,7 +134,7 @@ class MultiGPPI:
         self.start_prior_sample = UnaryFactor(
             self.d_state_opt,
             self.sigma_start_sample,
-            self.start_states,
+            self.start_state,
             self.tensor_args,
         )
 
@@ -210,11 +203,19 @@ class MultiGPPI:
             multi_goal_states=None,
     ):
 
-        if start_state is not None:
-            self.start_state = start_state.clone()
+        # Assume single start state provided
+        assert start_state.dim() == 1
+        assert start_state.shape[0] == self.n_dof * 2 # Pos + Vel
 
-        if multi_goal_states is not None:
-            self.multi_goal_states = multi_goal_states.clone()
+        assert multi_goal_states.dim() == 2
+        assert multi_goal_states.shape[0] == self.num_goals
+        assert multi_goal_states.shape[1] == self.n_dof * 2 # Pos + Vel
+
+        self.start_state = start_state.clone()
+        self.multi_goal_states = multi_goal_states.clone()
+
+        # Set cost factors
+        self.set_prior_factors()
 
         # Initialization particles from prior distribution
         self._init_dist = self.get_prior_dist(
@@ -222,7 +223,7 @@ class MultiGPPI:
             self.start_state,
             self.multi_goal_states,
         )
-        # self._init_dist = self.get_prior_dist(self.gp_prior_init, self.start_state,  torch.zeros(self.d_state_opt, **tensor_args))
+
         self.particle_means = self._init_dist.sample(self.num_particles_per_goal).to(**self.tensor_args)
         self.particle_means = self.particle_means.flatten(0, 1)
 
@@ -377,13 +378,9 @@ if __name__ == "__main__":
     # device = 'cpu'
     tensor_args = {'device': device, 'dtype': torch.float32}
 
+    # Start / Goal positions and velocities
     start_q = torch.Tensor([-9, -9]).to(**tensor_args)
     start_state = torch.cat((start_q, torch.zeros(2, **tensor_args)))
-    # goal_q = torch.Tensor([9, 9]).to(**tensor_args)
-    # goal_state = torch.cat((goal_q, torch.zeros(2, **tensor_args)))
-    # num_goals = 3
-    # multi_goal_states = goal_state.repeat(num_goals, 1)
-
     multi_goal_states = torch.tensor([
         [9, 9, 0., 0.],
         [9, -3, 0., 0.],
@@ -397,15 +394,13 @@ if __name__ == "__main__":
 
     ## Planner - 2D point particle dynamics
     gppi_params = dict(
-        num_particles_per_goal=num_particles_per_goal,
+        num_particles_per_goal=5,
         num_samples=128,
         traj_len=64,
         dt=0.02,
         n_dof=2,
         opt_iters=1, # Keep this 1 for visualization
         temp=1.,
-        start_state=start_state,
-        multi_goal_states=multi_goal_states,
         step_size=0.5,
         sigma_start=0.001,
         sigma_goal=0.001,
@@ -417,10 +412,11 @@ if __name__ == "__main__":
         sigma_goal_sample=0.1,
         sigma_gp_sample=5,
         w_obst=1.e9,
-        seed=seed,
+        seed=0,
         tensor_args=tensor_args,
     )
     planner = MultiGPPI(**gppi_params)
+    planner.reset(start_state, multi_goal_states)
 
     ## Obstacle map
     # obst_list = [(0, 0, 4, 6)]

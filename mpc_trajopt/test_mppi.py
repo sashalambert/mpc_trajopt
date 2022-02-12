@@ -1,3 +1,7 @@
+__author__ = "Alexander Lambert"
+__license__ = "MIT"
+
+
 import os
 from pathlib import Path
 import argparse

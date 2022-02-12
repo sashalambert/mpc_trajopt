@@ -81,8 +81,8 @@ class MultiGPMP:
 
         self.N = self.d_state_opt * self.traj_len # flattened particle dimension
         self.M = None
-        self.set_prior_factors()
-        self.reset(start_state, multi_goal_states)
+
+        # self.reset(start_state, multi_goal_states)
 
     def set_prior_factors(self):
         self.M = 0 # First dimension of the graph jacobian
@@ -305,6 +305,10 @@ class MultiGPMP:
         return b, K
 
     def get_linear_system(self, x, observation):
+        """
+            Aggregate factors for linear system.
+            Code based on https://github.com/mohakbhardwaj/dgpmp2
+        """
         b = x.shape[0]
         temp_A = torch.zeros(b, self.M, self.N, **self.tensor_args)
         temp_b = torch.zeros(b, self.M, 1, **self.tensor_args)

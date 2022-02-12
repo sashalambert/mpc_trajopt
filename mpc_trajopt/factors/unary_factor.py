@@ -1,3 +1,6 @@
+__author__ = "Alexander Lambert"
+__license__ = "MIT"
+
 import torch
 
 

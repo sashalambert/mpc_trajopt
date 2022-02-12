@@ -1,3 +1,7 @@
+__author__ = "Alexander Lambert"
+__license__ = "MIT"
+
+
 import torch.distributions as dist
 import torch
 from abc import ABC, abstractmethod

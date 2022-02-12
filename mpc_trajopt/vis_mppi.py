@@ -1,3 +1,7 @@
+__author__ = "Alexander Lambert"
+__license__ = "MIT"
+
+
 import torch
 import torch.nn.functional as F
 import numpy as np
