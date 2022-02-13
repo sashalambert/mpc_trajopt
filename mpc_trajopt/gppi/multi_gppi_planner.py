@@ -156,6 +156,7 @@ class MultiGPPI:
             self,
             start_state=None,
             multi_goal_states=None,
+            cost_func=None,
     ):
 
         # Assume single start state provided
@@ -168,6 +169,9 @@ class MultiGPPI:
 
         self.start_state = start_state.clone()
         self.multi_goal_states = multi_goal_states.clone()
+
+        if cost_func is not None:
+            self.cost_func = cost_func
 
         # Set cost factors
         self.set_prior_factors()

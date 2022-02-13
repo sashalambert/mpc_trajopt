@@ -89,7 +89,7 @@ class CostFactoredMultiGoal:
                 )
             )
 
-    def eval(self, trajs, observation):
+    def eval(self, trajs, observation=None):
 
         trajs = trajs.reshape(-1, self.traj_len, self.dim)
 
